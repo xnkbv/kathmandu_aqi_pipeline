@@ -13,7 +13,11 @@ PROCESSED_CSV_PATH = os.path.join(BASE_DIR, "../01_data/processed/kathmandu_aqi_
 print()
 conn = sqlite3.connect(DB_PATH)
 
-df_raw = pd.read_csv(RAW_CSV_PATH)
+df_raw = pd.read_csv(
+    RAW_CSV_PATH,
+    on_bad_lines='skip',
+    engine='python'
+)
 df_raw.to_sql("raw_aqi_data", conn, if_exists="replace", index=False)
 print("Raw CSV loaded into SQLite database")
 
