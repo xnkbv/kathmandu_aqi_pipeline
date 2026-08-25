@@ -1,68 +1,50 @@
-"""
-02_get_historical_openaq.py
-Pulls multi-year historical AQI/PM data for Kathmandu Valley stations
-"""
-
+import os
 import requests
 import pandas as pd
-import time
 
-OPENAQ_API_KEY = "YOUR_OPENAQ_KEY_HERE"  # register at explore.openaq.org
-BASE_URL = "https://api.openaq.org/v3"
-HEADERS = {"X-API-Key": OPENAQ_API_KEY}
+# Define path to output raw data
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_RAW_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "01_data", "raw", "ktm_aqi.csv"))
 
+# Micro-coordinates for targeted stations in Kathmandu Valley
+STATIONS = {
+    "Ratnapark": {"lat": 27.7064, "lon": 85.3157},
+    "Khumaltar": {"lat": 27.6558, "lon": 85.3253},
+    "Bhaisepati": {"lat": 27.6586, "lon": 85.3045},
+    "US_Embassy_Maharajgunj": {"lat": 27.7365, "lon": 85.3308}
+}
 
-def get_locations(city_bbox: str) -> pd.DataFrame:
-    # bbox format: lon_min,lat_min,lon_max,lat_max
-    url = f"{BASE_URL}/locations?bbox={city_bbox}&limit=1000"
-    resp = requests.get(url, headers=HEADERS)
-    resp.raise_for_status()
-    results = resp.json()["results"]
+def fetch_multi_station_aqi():
+    print("Starting Multi-Station AQI Data Extraction...")
+    station_dfs = []
 
-    locs = []
-    for r in results:
-        locs.append({
-            "location_id": r["id"],
-            "name": r["name"],
-            "latitude": r["coordinates"]["latitude"],
-            "longitude": r["coordinates"]["longitude"]
-        })
-    return pd.DataFrame(locs)
+    for station_name, coords in STATIONS.items():
+        print(f"Fetching 3-year history for station: {station_name}...")
+        url = (
+            f"https://air-quality-api.open-meteo.com/v1/air-quality?"
+            f"latitude={coords['lat']}&longitude={coords['lon']}"
+            f"&hourly=pm10,pm2_5,us_aqi"
+            f"&start_date=2023-01-01&end_date=2026-08-01"
+            f"&timezone=Asia%2FKathmandu"
+        )
+        
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            df_temp = pd.DataFrame(data['hourly'])
+            df_temp['station_name'] = station_name
+            station_dfs.append(df_temp)
+        else:
+            print(f"Failed to fetch data for {station_name}. Status code: {response.status_code}")
 
-
-def get_measurements(location_id: int, date_from: str, date_to: str) -> pd.DataFrame:
-    url = f"{BASE_URL}/locations/{location_id}/measurements"
-    params = {
-        "date_from": date_from,
-        "date_to": date_to,
-        "limit": 1000,
-        "page": 1
-    }
-    all_rows = []
-    while True:
-        resp = requests.get(url, headers=HEADERS, params=params)
-        resp.raise_for_status()
-        data = resp.json()["results"]
-        if not data:
-            break
-        all_rows.extend(data)
-        params["page"] += 1
-        time.sleep(0.5)
-    return pd.DataFrame(all_rows)
-
+    if station_dfs:
+        # Combine all station logs into a single master raw file
+        df_master = pd.concat(station_dfs, ignore_index=True)
+        
+        # Ensure raw folder exists and save CSV
+        os.makedirs(os.path.dirname(OUTPUT_RAW_PATH), exist_ok=True)
+        df_master.to_csv(OUTPUT_RAW_PATH, index=False)
+        print(f"Extraction Complete! Saved {len(df_master):,} total rows across {len(STATIONS)} stations to:\n  {OUTPUT_RAW_PATH}")
 
 if __name__ == "__main__":
-    bbox = "85.20,27.60,85.45,27.80"
-    locations = get_locations(bbox)
-    locations.to_csv("01_data/raw/openaq_locations.csv", index=False)
-
-    all_measurements = []
-    for _, row in locations.iterrows():
-        print(f"Pulling {row['name']}...")
-        df = get_measurements(row["location_id"], "2022-01-01", "2025-12-31")
-        df["location_name"] = row["name"]
-        all_measurements.append(df)
-
-    full_df = pd.concat(all_measurements, ignore_index=True)
-    full_df.to_csv("01_data/raw/ktmaqi_openaq.csv", index=False)
-    print(f"Saved {len(full_df)} rows")
+    fetch_multi_station_aqi()
