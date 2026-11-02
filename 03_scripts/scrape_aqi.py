@@ -2,11 +2,9 @@ import os
 import requests
 import pandas as pd
 
-# Define path to output raw data
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_RAW_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "01_data", "raw", "ktm_aqi.csv"))
 
-# Micro-coordinates for targeted stations in Kathmandu Valley
 STATIONS = {
     "Ratnapark": {"lat": 27.7064, "lon": 85.3157},
     "Khumaltar": {"lat": 27.6558, "lon": 85.3253},
@@ -19,7 +17,8 @@ def fetch_multi_station_aqi():
     station_dfs = []
 
     for station_name, coords in STATIONS.items():
-        print(f"Fetching 3-year history for station: {station_name}...")
+        print(f"Fetching history for station: {station_name}...")
+        # Use air-quality-api endpoint for historical air quality data
         url = (
             f"https://air-quality-api.open-meteo.com/v1/air-quality?"
             f"latitude={coords['lat']}&longitude={coords['lon']}"
@@ -31,20 +30,21 @@ def fetch_multi_station_aqi():
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
-            df_temp = pd.DataFrame(data['hourly'])
-            df_temp['station_name'] = station_name
-            station_dfs.append(df_temp)
+            if 'hourly' in data:
+                df_temp = pd.DataFrame(data['hourly'])
+                df_temp['station_name'] = station_name
+                station_dfs.append(df_temp)
+                print(f"Fetched {len(df_temp):,} hourly rows for {station_name}.")
+            else:
+                print(f"Error: 'hourly' key missing for {station_name}.")
         else:
-            print(f"Failed to fetch data for {station_name}. Status code: {response.status_code}")
+            print(f"Failed to fetch {station_name}: {response.status_code}")
 
     if station_dfs:
-        # Combine all station logs into a single master raw file
         df_master = pd.concat(station_dfs, ignore_index=True)
-        
-        # Ensure raw folder exists and save CSV
         os.makedirs(os.path.dirname(OUTPUT_RAW_PATH), exist_ok=True)
         df_master.to_csv(OUTPUT_RAW_PATH, index=False)
-        print(f"Extraction Complete! Saved {len(df_master):,} total rows across {len(STATIONS)} stations to:\n  {OUTPUT_RAW_PATH}")
+        print(f"Saved {len(df_master):,} total rows to:\n  {OUTPUT_RAW_PATH}")
 
 if __name__ == "__main__":
     fetch_multi_station_aqi()
