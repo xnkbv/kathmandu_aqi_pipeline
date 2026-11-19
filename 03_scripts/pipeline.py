@@ -12,6 +12,8 @@ Outputs (01_data/processed/) - ready for Power BI
   kathmandu_aqi_clean.csv      one row per station per hour
   daily_station_summary.csv    one row per station per day (worst days, peak hour)
   stations.csv                 one row per station (map: lat/lon, averages, coverage)
+  pm25_heatmap_grid.csv        PM2.5 estimated on a ~400 m grid across the valley
+                               (inverse-distance weighting), for the heatmap
 """
 import glob
 import os
@@ -28,6 +30,15 @@ PROCESSED_DIR = os.path.join(DATA_DIR, "processed")
 PROCESSED_CSV_PATH = os.path.join(PROCESSED_DIR, "kathmandu_aqi_clean.csv")
 DAILY_CSV_PATH = os.path.join(PROCESSED_DIR, "daily_station_summary.csv")
 STATIONS_CSV_PATH = os.path.join(PROCESSED_DIR, "stations.csv")
+GRID_CSV_PATH = os.path.join(PROCESSED_DIR, "pm25_heatmap_grid.csv")
+
+# --- Heatmap grid settings ----------------------------------------------------
+GRID_STEP_DEG = 0.004          # ~400 m between grid points
+GRID_MAX_DIST_KM = 3.0         # don't estimate further than this from any station
+IDW_POWER = 2                  # standard inverse-distance weighting
+GRID_MIN_COVERAGE = 40         # only stations with >= 40% of hours measured
+GRID_MIN_DAYS = 20             # station needs >= 20 valid days in a season
+GRID_START = "2025-10-01"      # period when the full sensor network was running
 
 # Nepal is UTC+05:45 all year (no daylight saving), so a fixed offset is exact.
 NEPAL_OFFSET = pd.Timedelta(hours=5, minutes=45)
@@ -180,6 +191,61 @@ def drop_duplicate_stations(df, stations):
     return df[df.station_id.isin(stations.station_id)], stations
 
 
+def build_heatmap_grid(daily, st):
+    """Estimate PM2.5 across the valley from the station averages.
+
+    For each season (plus 'All year') every grid point gets the inverse-distance
+    weighted average of the stations' mean daily PM2.5: closer stations count
+    more. Points further than GRID_MAX_DIST_KM from every station are left out,
+    so the map only shows areas the sensors actually cover."""
+    good = st.loc[st["coverage_pct"] >= GRID_MIN_COVERAGE, ["station_id", "latitude", "longitude"]]
+    d = daily[(pd.to_datetime(daily["date"]) >= GRID_START) & daily["daily_pm2_5"].notna()]
+    d = d[d["station_id"].isin(good["station_id"])]
+    if d.empty or good.empty:
+        return pd.DataFrame()
+
+    periods = {"All year": d}
+    for season, part in d.groupby("season"):
+        periods[season] = part
+
+    lat0, lat1 = good.latitude.min() - 0.02, good.latitude.max() + 0.02
+    lon0, lon1 = good.longitude.min() - 0.02, good.longitude.max() + 0.02
+    glat, glon = np.meshgrid(np.arange(lat0, lat1, GRID_STEP_DEG),
+                             np.arange(lon0, lon1, GRID_STEP_DEG), indexing="ij")
+    glat, glon = glat.ravel(), glon.ravel()
+
+    out = []
+    for period, part in periods.items():
+        means = part.groupby("station_id").daily_pm2_5.agg(["mean", "size"])
+        means = means[means["size"] >= GRID_MIN_DAYS]
+        s = good.set_index("station_id").join(means, how="inner")
+        if len(s) < 3:
+            continue
+        # distance (km) from every grid point to every station
+        dist = haversine_m(glat[:, None], glon[:, None],
+                           s.latitude.values[None, :], s.longitude.values[None, :]) / 1000
+        nearest = dist.min(axis=1)
+        keep = nearest <= GRID_MAX_DIST_KM
+        w = 1 / np.maximum(dist[keep], 0.05) ** IDW_POWER
+        est = (w * s["mean"].values[None, :]).sum(axis=1) / w.sum(axis=1)
+        out.append(pd.DataFrame({
+            "period": period,
+            "latitude": glat[keep].round(5),
+            "longitude": glon[keep].round(5),
+            "pm2_5_estimate": est.round(1),
+            "nearest_station_km": nearest[keep].round(2),
+            "stations_used": len(s),
+        }))
+    if not out:
+        return pd.DataFrame()
+    grid = pd.concat(out, ignore_index=True)
+    grid["aqi_estimate"] = aqi_from_conc(grid["pm2_5_estimate"], PM25_BREAKPOINTS, 1)
+    grid["aqi_category"] = grid["aqi_estimate"].apply(categorize_aqi)
+    order = {"All year": 0, "Winter": 1, "Pre-monsoon": 2, "Monsoon": 3, "Post-monsoon": 4}
+    grid["period_order"] = grid["period"].map(order)
+    return grid
+
+
 # ---------------------------------------------------------------------------
 # Cleaning
 # ---------------------------------------------------------------------------
@@ -321,6 +387,9 @@ def run_pipeline():
     df.to_csv(PROCESSED_CSV_PATH, index=False)
     daily.to_csv(DAILY_CSV_PATH, index=False)
     st.to_csv(STATIONS_CSV_PATH, index=False)
+    grid = build_heatmap_grid(daily, st)
+    if not grid.empty:
+        grid.to_csv(GRID_CSV_PATH, index=False)
 
     print("\nStation coverage:")
     print(st[["station_name", "sensor_type", "first_reading", "last_reading",
@@ -329,6 +398,9 @@ def run_pipeline():
     print(f"  kathmandu_aqi_clean.csv     {len(df):,} station-hours")
     print(f"  daily_station_summary.csv   {len(daily):,} station-days")
     print(f"  stations.csv                {len(st)} stations")
+    if not grid.empty:
+        print(f"  pm25_heatmap_grid.csv       {len(grid):,} grid points "
+              f"({grid.period.nunique()} periods, {grid.stations_used.max()} stations)")
 
 
 if __name__ == "__main__":

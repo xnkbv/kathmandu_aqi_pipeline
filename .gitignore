@@ -2,6 +2,9 @@
 openaq_api_key.txt
 .env
 
+# SQLite database - rebuilt by 03_scripts/run_sql.py, too big for GitHub (>100 MB)
+01_data/*.db
+
 # Python
 __pycache__/
 *.pyc
