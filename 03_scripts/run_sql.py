@@ -1,70 +1,70 @@
+"""
+Load the processed CSVs into SQLite (using 02_sql/schema.sql) and run every
+query in 02_sql/analytical_queries.sql, printing the results.
+"""
 import os
+import re
 import sqlite3
+
 import pandas as pd
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "01_data", "kathmandu_aqi.db"))
-CLEAN_CSV = os.path.abspath(os.path.join(BASE_DIR, "..", "01_data", "processed", "kathmandu_aqi_clean.csv"))
-SCHEMA_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "02_sql", "schema.sql"))
+PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
+DB_PATH = os.path.join(PROJECT_DIR, "01_data", "kathmandu_aqi.db")
+PROCESSED_DIR = os.path.join(PROJECT_DIR, "01_data", "processed")
+SCHEMA_PATH = os.path.join(PROJECT_DIR, "02_sql", "schema.sql")
+QUERIES_PATH = os.path.join(PROJECT_DIR, "02_sql", "analytical_queries.sql")
+
+TABLES = {
+    "stations": "stations.csv",
+    "kathmandu_aqi": "kathmandu_aqi_clean.csv",
+    "daily_station_summary": "daily_station_summary.csv",
+}
+
+
+def load_tables(conn):
+    with open(SCHEMA_PATH, encoding="utf-8") as f:
+        conn.executescript(f.read())
+    for table, filename in TABLES.items():
+        path = os.path.join(PROCESSED_DIR, filename)
+        if not os.path.exists(path):
+            raise SystemExit(f"Missing {path} - run pipeline.py first.")
+        df = pd.read_csv(path)
+        cols = [r[1] for r in conn.execute(f"PRAGMA table_info({table})")]
+        df = df[[c for c in cols if c in df.columns]]
+        for c in ("is_measured", "is_imputed"):
+            if c in df.columns:
+                df[c] = df[c].astype(int)
+        df.to_sql(table, conn, if_exists="append", index=False)
+        print(f"Loaded {len(df):,} rows into '{table}'")
+    conn.commit()
+
+
+def run_queries(conn):
+    with open(QUERIES_PATH, encoding="utf-8") as f:
+        text = f.read()
+    # Each query starts with a "-- QUERY n: title" header
+    blocks = re.split(r"--\s*=+\s*\n--\s*(QUERY[^\n]*)\n", text)
+    pd.set_option("display.width", 200)
+    for title, body in zip(blocks[1::2], blocks[2::2]):
+        sql = "\n".join(l for l in body.splitlines() if not l.strip().startswith("--")).strip()
+        if not sql:
+            continue
+        print("\n" + "=" * 70 + f"\n{title}\n" + "=" * 70)
+        df = pd.read_sql_query(sql, conn)
+        print(df.head(40).to_string(index=False))
+        if len(df) > 40:
+            print(f"... ({len(df):,} rows total)")
+
 
 def execute_pipeline_sql():
-    if not os.path.exists(CLEAN_CSV):
-        print(f"Error: Clean dataset not found at {CLEAN_CSV}")
-        return
-
     conn = sqlite3.connect(DB_PATH)
+    try:
+        load_tables(conn)
+        run_queries(conn)
+    finally:
+        conn.close()
 
-    # 1. Load Processed CSV
-    print("Loading clean CSV dataset...")
-    df_clean = pd.read_csv(CLEAN_CSV)
-    
-    # Drop raw 'time' column if it exists to match clean SQL table structure
-    if 'time' in df_clean.columns:
-        df_clean = df_clean.drop(columns=['time'])
-
-    # 2. Write directly to SQLite table (automatically creates matching schema)
-    print("Writing data into SQLite table 'kathmandu_aqi'...")
-    df_clean.to_sql("kathmandu_aqi", conn, if_exists="replace", index=False)
-    conn.commit()
-    print(f"Successfully loaded {len(df_clean):,} rows into SQLite.")
-
-    # 3. Run Query 1: Most Polluted Day & Hour of Every Month
-    print("\n" + "="*65)
-    print("MOST POLLUTED DAY & HOUR OF EVERY MONTH")
-    print("="*65)
-    
-    q1 = """
-    WITH MonthlyRankedAQI AS (
-        SELECT month_num, month_name, date, day_name, hour, station_name, us_aqi, pm2_5,
-               ROW_NUMBER() OVER (PARTITION BY month_num ORDER BY us_aqi DESC, pm2_5 DESC) as rank
-        FROM kathmandu_aqi
-    )
-    SELECT month_num, month_name, date as peak_date, day_name, 
-           printf('%02d:00', hour) as peak_hour, station_name, us_aqi as max_us_aqi, pm2_5 as max_pm2_5
-    FROM MonthlyRankedAQI WHERE rank = 1 ORDER BY month_num ASC;
-    """
-    df_q1 = pd.read_sql_query(q1, conn)
-    print(df_q1.to_string(index=False))
-
-    # 4. Run Query 2: Area Station Ranking & Heatmap Data Baseline
-    print("\n" + "="*65)
-    print("STATION AREA RANKINGS (HEATMAP BASELINE)")
-    print("="*65)
-    
-    q2 = """
-    SELECT station_name, 
-           ROUND(AVG(us_aqi), 1) as avg_aqi, 
-           MAX(us_aqi) as max_aqi,
-           ROUND(AVG(pm2_5), 1) as avg_pm2_5,
-           ROUND(100.0 * SUM(CASE WHEN us_aqi > 150 THEN 1 ELSE 0 END) / COUNT(*), 2) as pct_unhealthy_hours
-    FROM kathmandu_aqi 
-    GROUP BY station_name 
-    ORDER BY avg_aqi DESC;
-    """
-    df_q2 = pd.read_sql_query(q2, conn)
-    print(df_q2.to_string(index=False))
-
-    conn.close()
 
 if __name__ == "__main__":
     execute_pipeline_sql()

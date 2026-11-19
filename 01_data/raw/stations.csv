@@ -1,0 +1,53 @@
+station_id,station_name,latitude,longitude,provider,owner,sensor_type,first_seen_utc,last_seen_utc,source
+3459,US Embassy (Maharajgunj),27.738703,85.336206,AirNow,Unknown Governmental Organization,reference,2017-03-03T00:00:00Z,2026-06-17T23:15:00Z,OpenAQ
+3460,US Embassy (Phora Durbar),27.712464,85.315703,AirNow,Unknown Governmental Organization,reference,2017-03-03T00:00:00Z,2025-03-24T14:15:00Z,OpenAQ
+1236017,"Dhathutole, Handigaun",27.727502,85.330135,AirGradient,Unknown Governmental Organization,low-cost,2023-07-15T13:00:00Z,2026-06-01T04:00:00Z,OpenAQ
+2848864,"Dabali, Handigaun",27.68189114,85.28707804,AirGradient,Unknown Person,low-cost,2024-05-16T03:00:00Z,2026-10-19T03:00:00Z,OpenAQ
+4121681,Kathmandu Institute of Applied Sciences (KIAS),27.6716935,85.30167,AirGradient,Sapana Bhujel,low-cost,2025-05-01T09:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+5506835,Gaushala Chowk,27.707763,85.343189,AirGradient,Green Decision Labs and Research,low-cost,2025-09-19T00:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+5509787,Baluwatar,27.7249438,85.331062,AirGradient,Green Decision Labs and Research,low-cost,2025-09-25T07:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+5509788,Lagankhel,27.666459,85.323093,AirGradient,Green Decision Labs and Research,low-cost,2025-10-03T00:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+5518333,Sifal,27.710794,85.340591,AirGradient,Green Decision Labs and Research,low-cost,2025-12-24T08:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+5519358,Lamtangil,27.731368,85.336783,AirGradient,Green Decision Labs and Research,low-cost,2025-12-24T09:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+5598104,Pulchowk,27.6773887,85.3184176,AirGradient,Green Decision Labs and Research,low-cost,2025-09-19T00:00:00Z,2026-01-27T08:00:00Z,OpenAQ
+5633032,Nakhipot,27.6510811,85.3178568,AirGradient,Green Decision Labs and Research,low-cost,2025-09-19T00:00:00Z,2026-11-18T16:00:00Z,OpenAQ
+5634500,Sunakothi,27.630412,85.320402,AirGradient,Green Decision Labs and Research,low-cost,2025-09-19T00:00:00Z,2026-11-19T05:00:00Z,OpenAQ
+5676345,Chovar,27.6662854,85.2937189,AirGradient,Green Decision Labs and Research,low-cost,2025-09-19T00:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+5676826,Taudaha,27.651121,85.283954,AirGradient,Green Decision Labs and Research,low-cost,2025-09-19T00:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+5695597,"Patako Chowk, Patan Durbar Square",27.673979,85.325392,AirGradient,AirGradient,low-cost,2025-09-19T00:00:00Z,2026-06-15T09:00:00Z,OpenAQ
+5699844,Farsidol Relocated,27.609972,85.296917,AirGradient,Clean Energy Nepal (CEN),low-cost,2025-11-07T06:00:00Z,2026-05-11T06:00:00Z,OpenAQ
+5710077,Farsidol Brick Factories,27.6175,85.2961,AirGradient,Clean Energy Nepal (CEN),low-cost,2025-09-19T00:00:00Z,2026-08-05T05:00:00Z,OpenAQ
+6070692,Shantichowk,27.7239866,85.2793095,AirGradient,Green Decision Labs and Research,low-cost,2025-10-09T07:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6071242,Gothatar,27.7109112,85.3803717,AirGradient,Green Decision Labs and Research,low-cost,2025-10-09T08:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6083043,Gokarneshwor,27.7206848,85.381682,AirGradient,Green Decision Labs and Research,low-cost,2025-10-10T07:00:00Z,2026-09-05T16:00:00Z,OpenAQ
+6093431,Mahankal,27.7258555,85.3581047,AirGradient,Green Decision Labs and Research,low-cost,2025-10-13T05:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6093432,Chhetrapati,27.7119136,85.3061473,AirGradient,Green Decision Labs and Research,low-cost,2025-10-13T06:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6093548,Tarakeswor,27.759667,85.289631,AirGradient,Green Decision Labs and Research,low-cost,2025-10-13T07:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6093549,Golfutar,27.74857,85.349052,AirGradient,Green Decision Labs and Research,low-cost,2025-10-13T07:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6093550,Tankeshwor,27.7003531,85.3015259,AirGradient,Green Decision Labs and Research,low-cost,2025-10-13T07:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6093551,Teku Ward 12,27.6988338,85.3041625,AirGradient,Green Decision Labs and Research,low-cost,2025-10-19T09:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6093752,Ramkot,27.695671,85.337428,AirGradient,Green Decision Labs and Research,low-cost,2025-10-13T09:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6094668,Sundarighat,27.6737702,85.2948301,AirGradient,Green Decision Labs and Research,low-cost,2025-10-14T05:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6094706,Kritipur Ward 3,27.6774083,85.2727816,AirGradient,Green Decision Labs and Research,low-cost,2025-10-14T06:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6094777,Tyanglaphat,27.6861651,85.28026,AirGradient,Green Decision Labs and Research,low-cost,2025-10-14T06:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6094778,Sanepa,27.6854882,85.3091634,AirGradient,Green Decision Labs and Research,low-cost,2025-10-14T08:00:00Z,2026-09-09T08:00:00Z,OpenAQ
+6094779,Balaju,27.738289,85.302611,AirGradient,Green Decision Labs and Research,low-cost,2025-10-14T07:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6120977,Sitapaila,27.7093728,85.2808987,AirGradient,Green Decision Labs and Research,low-cost,2025-11-06T06:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6121046,Tokha,27.7560283,85.3268462,AirGradient,Green Decision Labs and Research,low-cost,2025-11-06T07:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6121047,Imadol,27.661062,85.347716,AirGradient,Green Decision Labs and Research,low-cost,2025-11-06T07:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6121083,Balkumari,27.671069,85.338037,AirGradient,Green Decision Labs and Research,low-cost,2025-11-06T08:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6121118,Tokha 2,27.7376474,85.319391,AirGradient,Green Decision Labs and Research,low-cost,2025-11-06T09:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6121225,Kaushaltar,27.6724803,85.3617649,AirGradient,Green Decision Labs and Research,low-cost,2025-11-06T11:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6128821,Kadhaghari,27.696521,85.369882,AirGradient,Green Decision Labs and Research,low-cost,2025-11-13T08:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6133623,Jadibuti,27.682109,85.354791,AirGradient,Green Decision Labs and Research,low-cost,2025-11-17T10:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6138068,Purano naikap,27.705718,85.255141,AirGradient,Green Decision Labs and Research,low-cost,2025-12-05T05:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6141873,Khokana,27.637633,85.301661,AirGradient,Green Decision Labs and Research,low-cost,2025-11-25T06:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6141912,Kupondole,27.689661,85.310442,AirGradient,Green Decision Labs and Research,low-cost,2025-11-25T08:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6142022,Mid Baneshwor,27.693662,85.340501,AirGradient,Green Decision Labs and Research,low-cost,2025-11-25T09:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6142174,Ranibari,27.727562,85.321155,AirGradient,Green Decision Labs and Research,low-cost,2025-11-25T11:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6142175,Sorakhutte,27.71847,85.310271,AirGradient,Green Decision Labs and Research,low-cost,2025-11-25T10:00:00Z,2026-11-01T21:00:00Z,OpenAQ
+6151854,"Haugal Ganesh Temple, Patan Durbar Square",27.671944,85.324444,AirGradient,Clean Energy Nepal (CEN),low-cost,2025-12-04T05:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6176215,Tripureshowr,27.692998,85.312458,AirGradient,Green Decision Labs and Research,low-cost,2025-12-24T07:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6230465,Bagdol,27.671706,85.301619,AirGradient,KIAS,low-cost,2026-02-06T09:00:00Z,2026-11-19T07:00:00Z,OpenAQ
+6336000,Herne Katha,27.6838241,85.3101773,AirGradient,Clean Energy Nepal (CEN),low-cost,2026-05-05T13:00:00Z,2026-10-28T05:00:00Z,OpenAQ
+6484977,Farsidol Brick Industry Area,27.660096,85.322651,AirGradient,Clean Energy Nepal (CEN),low-cost,2026-08-12T05:00:00Z,2026-11-19T07:00:00Z,OpenAQ
